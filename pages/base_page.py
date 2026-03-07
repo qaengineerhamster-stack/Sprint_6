@@ -1,56 +1,79 @@
 import allure
-from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    TimeoutException,
+)
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
 class BasePage:
     def __init__(self, driver, timeout: int = 10):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, timeout)
+        self._driver = driver
+        self._wait = WebDriverWait(driver, timeout)
+
+    @property
+    def driver(self):
+        return self._driver
+
+    @property
+    def wait(self):
+        return self._wait
 
     @allure.step("Открыть страницу: {url}")
     def open(self, url: str):
-        self.driver.get(url)
+        self._driver.get(url)
+
+    def find(self, locator):
+        return self._wait.until(EC.presence_of_element_located(locator))
+
+    def find_visible(self, locator):
+        return self._wait.until(EC.visibility_of_element_located(locator))
+
+    def is_visible(self, locator) -> bool:
+        self.find_visible(locator)
+        return True
 
     def scroll_into_view(self, locator):
-        el = self.wait.until(EC.presence_of_element_located(locator))
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", el)
+        el = self.find(locator)
+        self._driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
         return el
 
-    @allure.step("Клик по элементу: {locator}")
-    def click(self, locator):
-        self.wait.until(EC.element_to_be_clickable(locator)).click()
-
-    @allure.step("Безопасный клик (со скроллом) по элементу: {locator}")
+    @allure.step("Безопасный клик по элементу: {locator}")
     def click_safe(self, locator):
         el = self.scroll_into_view(locator)
         try:
-            self.wait.until(EC.element_to_be_clickable(locator)).click()
+            self._wait.until(EC.element_to_be_clickable(locator)).click()
         except ElementClickInterceptedException:
-            # запасной вариант — клик через JS
-            self.driver.execute_script("arguments[0].click();", el)
+            self._driver.execute_script("arguments[0].click();", el)
 
     @allure.step("Ввести текст '{value}' в поле: {locator}")
     def type(self, locator, value: str):
-        el = self.wait.until(EC.visibility_of_element_located(locator))
+        el = self.find_visible(locator)
         el.clear()
         el.send_keys(value)
 
-    @allure.step("Получить текст элемента: {locator}")
-    def get_text(self, locator) -> str:
-        return self.wait.until(EC.visibility_of_element_located(locator)).text
+    @allure.step("Отправить клавиши в элемент: {locator}")
+    def send_keys(self, locator, keys):
+        el = self.find(locator)
+        el.send_keys(keys)
 
-    @allure.step("Проверить видимость элемента: {locator}")
-    def is_visible(self, locator) -> bool:
-        self.wait.until(EC.visibility_of_element_located(locator))
-        return True
+    def js_click_body(self):
+        self._driver.execute_script("document.body.click();")
 
-    @allure.step("Дождаться, что URL содержит: {part}")
-    def wait_url_contains(self, part: str):
-        self.wait.until(EC.url_contains(part))
+    def current_url(self) -> str:
+        return self._driver.current_url
 
-    @allure.step("Переключиться на новое окно/вкладку")
+    def wait_url_not(self, url: str, timeout: int = 10):
+        WebDriverWait(self._driver, timeout).until(lambda d: d.current_url != url)
+
     def switch_to_new_window(self):
-        self.wait.until(lambda d: len(d.window_handles) > 1)
-        self.driver.switch_to.window(self.driver.window_handles[-1])
+        self._wait.until(lambda d: len(d.window_handles) > 1)
+        self._driver.switch_to.window(self._driver.window_handles[-1])
+
+    def try_click_if_present(self, locator, timeout: int = 2) -> bool:
+        try:
+            WebDriverWait(self._driver, timeout).until(EC.element_to_be_clickable(locator)).click()
+            return True
+        except TimeoutException:
+            return False

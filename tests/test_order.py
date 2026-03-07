@@ -3,7 +3,6 @@ import pytest
 from pages.main_page import MainPage
 from pages.order_page import OrderPage
 from pages.rent_page import RentPage
-from pages.locators import OrderPageLocators
 
 BASE_URL = "https://qa-scooter.praktikum-services.ru/"
 
@@ -32,14 +31,13 @@ ORDER_DATA = [
     },
 ]
 
+
 @allure.feature("Order")
 @pytest.mark.parametrize("data", ORDER_DATA)
 def test_order_positive_flow_with_two_datasets(driver, data):
     main = MainPage(driver)
     main.open(BASE_URL)
     main.accept_cookies_if_present()
-
-    # полный флоу только через одну точку входа (верхняя кнопка)
     main.click_order_top()
 
     order = OrderPage(driver)
@@ -53,16 +51,17 @@ def test_order_positive_flow_with_two_datasets(driver, data):
 
 
 @allure.feature("Order")
-@pytest.mark.parametrize("entry", ["top", "bottom"])
-def test_order_entry_points_open_order_page(driver, entry):
+@pytest.mark.parametrize(
+    "entry_click",
+    [MainPage.click_order_top, MainPage.click_order_bottom],
+    ids=["top", "bottom"]
+)
+def test_order_entry_points_open_order_page(driver, entry_click):
     main = MainPage(driver)
     main.open(BASE_URL)
     main.accept_cookies_if_present()
 
-    if entry == "top":
-        main.click_order_top()
-    else:
-        main.click_order_bottom()
+    entry_click(main)  # без if
 
     order = OrderPage(driver)
-    assert order.is_visible(OrderPageLocators.NAME)
+    assert order.is_opened()
