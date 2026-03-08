@@ -1,3 +1,4 @@
+
 from selenium.webdriver.common.by import By
 
 
@@ -14,5 +15,6 @@ class RentPageLocators:
     COMMENT = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
 
     ORDER = (By.XPATH, "//div[contains(@class,'Order_Buttons')]//button[normalize-space()='Заказать']")
+
     YES_BUTTON_ANYWHERE = (By.XPATH, "//button[normalize-space()='Да']")
     SUCCESS_TEXT = (By.XPATH, "//*[contains(text(),'Заказ оформлен')]")

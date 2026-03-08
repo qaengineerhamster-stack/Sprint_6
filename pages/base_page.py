@@ -1,8 +1,5 @@
 import allure
-from selenium.common.exceptions import (
-    ElementClickInterceptedException,
-    TimeoutException,
-)
+from selenium.common.exceptions import ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -16,11 +13,6 @@ class BasePage:
     def driver(self):
         return self._driver
 
-    @property
-    def wait(self):
-        return self._wait
-
-    @allure.step("Открыть страницу: {url}")
     def open(self, url: str):
         self._driver.get(url)
 
@@ -39,7 +31,7 @@ class BasePage:
         self._driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
         return el
 
-    @allure.step("Безопасный клик по элементу: {locator}")
+    @allure.step("Безопасный клик: {locator}")
     def click_safe(self, locator):
         el = self.scroll_into_view(locator)
         try:
@@ -53,7 +45,6 @@ class BasePage:
         el.clear()
         el.send_keys(value)
 
-    @allure.step("Отправить клавиши в элемент: {locator}")
     def send_keys(self, locator, keys):
         el = self.find(locator)
         el.send_keys(keys)
@@ -64,7 +55,7 @@ class BasePage:
     def current_url(self) -> str:
         return self._driver.current_url
 
-    def wait_url_not(self, url: str, timeout: int = 10):
+    def wait_until_url_changes_from(self, url: str, timeout: int = 10):
         WebDriverWait(self._driver, timeout).until(lambda d: d.current_url != url)
 
     def switch_to_new_window(self):
@@ -77,3 +68,6 @@ class BasePage:
             return True
         except TimeoutException:
             return False
+
+    def wait_until(self, condition, timeout: int = 10):
+        return WebDriverWait(self._driver, timeout).until(condition)

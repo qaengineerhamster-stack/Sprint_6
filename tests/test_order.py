@@ -1,35 +1,12 @@
 import allure
 import pytest
+
 from pages.main_page import MainPage
 from pages.order_page import OrderPage
 from pages.rent_page import RentPage
 
-BASE_URL = "https://qa-scooter.praktikum-services.ru/"
-
-ORDER_DATA = [
-    {
-        "name": "Павел",
-        "surname": "Соколов",
-        "address": "Москва, ул. Тестовая 1",
-        "metro": "Арбатская",
-        "phone": "+79990000001",
-        "date": "10.03.2026",
-        "period": "двое суток",
-        "color": "black",
-        "comment": "Позвонить за 10 минут",
-    },
-    {
-        "name": "Анна",
-        "surname": "Иванова",
-        "address": "Москва, ул. Пример 2",
-        "metro": "Сокольники",
-        "phone": "+79990000002",
-        "date": "15.03.2026",
-        "period": "трое суток",
-        "color": "grey",
-        "comment": "Оставить у двери",
-    },
-]
+from data.urls import BASE_URL
+from data.order_data import ORDER_DATA
 
 
 @allure.feature("Order")
@@ -54,14 +31,14 @@ def test_order_positive_flow_with_two_datasets(driver, data):
 @pytest.mark.parametrize(
     "entry_click",
     [MainPage.click_order_top, MainPage.click_order_bottom],
-    ids=["top", "bottom"]
+    ids=["top", "bottom"],
 )
 def test_order_entry_points_open_order_page(driver, entry_click):
     main = MainPage(driver)
     main.open(BASE_URL)
     main.accept_cookies_if_present()
 
-    entry_click(main)  # без if
+    entry_click(main)
 
     order = OrderPage(driver)
     assert order.is_opened()

@@ -4,6 +4,7 @@ from locators.order_page_locators import OrderPageLocators
 
 
 class OrderPage(BasePage):
+    @allure.step("Заполнить форму 'Для кого самокат'")
     def fill_customer_form(self, data: dict):
         self.type(OrderPageLocators.NAME, data["name"])
         self.type(OrderPageLocators.SURNAME, data["surname"])
@@ -15,6 +16,7 @@ class OrderPage(BasePage):
 
         self.type(OrderPageLocators.PHONE, data["phone"])
 
+    @allure.step("Нажать Далее")
     def click_next(self):
         self.click_safe(OrderPageLocators.NEXT)
 

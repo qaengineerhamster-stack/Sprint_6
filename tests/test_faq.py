@@ -1,8 +1,7 @@
 import allure
 import pytest
 from pages.main_page import MainPage
-
-BASE_URL = "https://qa-scooter.praktikum-services.ru/"
+from data.urls import BASE_URL
 
 FAQ_EXPECTED = {
     0: "Сутки — 400 рублей",
@@ -14,6 +13,7 @@ FAQ_EXPECTED = {
     6: "пока самокат не привезли",
     7: "Да, обязательно",
 }
+
 
 @allure.feature("FAQ")
 @pytest.mark.parametrize("question_id", list(FAQ_EXPECTED.keys()))

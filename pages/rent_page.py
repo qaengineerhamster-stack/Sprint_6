@@ -1,6 +1,5 @@
 import allure
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 
 from pages.base_page import BasePage
 from locators.rent_page_locators import RentPageLocators
@@ -12,7 +11,7 @@ class RentPage(BasePage):
             "black": RentPageLocators.COLOR_BLACK,
             "grey": RentPageLocators.COLOR_GREY,
         }
-        return mapping[color]  # если пришло не то — упадёт честно
+        return mapping[color]
 
     @allure.step("Заполнить форму 'Про аренду'")
     def fill_rent_form(self, data: dict):
@@ -33,17 +32,17 @@ class RentPage(BasePage):
     def submit_order_and_confirm(self):
         self.click_safe(RentPageLocators.ORDER)
 
-        wait = WebDriverWait(self.driver, 15)
-
         def either_confirm_or_success(d):
             yes = d.find_elements(*RentPageLocators.YES_BUTTON_ANYWHERE)
             ok = d.find_elements(*RentPageLocators.SUCCESS_TEXT)
             return (yes[0] if yes else None) or (ok[0] if ok else None)
 
-        el = wait.until(either_confirm_or_success)
-        if el.tag_name.lower() == "button" and el.text.strip() == "Да":
-            # кликаем через BasePage safe (по локатору)
+        el = self.wait_until(either_confirm_or_success, timeout=15)
+
+        # если появился "Да" — подтверждаем
+        if getattr(el, "tag_name", "").lower() == "button" and el.text.strip() == "Да":
             self.click_safe(RentPageLocators.YES_BUTTON_ANYWHERE)
 
+    @allure.step("Проверить, что заказ оформлен успешно")
     def assert_success(self):
         assert self.is_visible(RentPageLocators.SUCCESS_TEXT)
