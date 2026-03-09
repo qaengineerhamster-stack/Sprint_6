@@ -1,18 +1,9 @@
 import allure
 import pytest
+
 from pages.main_page import MainPage
 from data.urls import BASE_URL
-
-FAQ_EXPECTED = {
-    0: "Сутки — 400 рублей",
-    1: "один заказ — один самокат",
-    2: "оформляете заказ",
-    3: "Только начиная с завтрашнего дня",
-    4: "Пока что нет",
-    5: "полной зарядкой",
-    6: "пока самокат не привезли",
-    7: "Да, обязательно",
-}
+from data.faq_expected import FAQ_EXPECTED
 
 
 @allure.feature("FAQ")

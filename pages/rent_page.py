@@ -28,20 +28,13 @@ class RentPage(BasePage):
         self.click_safe(self._color_locator(data["color"]))
         self.type(RentPageLocators.COMMENT, data.get("comment", ""))
 
-    @allure.step("Оформить заказ и подтвердить (если нужно)")
+    @allure.step("Оформить заказ и подтвердить")
     def submit_order_and_confirm(self):
         self.click_safe(RentPageLocators.ORDER)
 
-        def either_confirm_or_success(d):
-            yes = d.find_elements(*RentPageLocators.YES_BUTTON_ANYWHERE)
-            ok = d.find_elements(*RentPageLocators.SUCCESS_TEXT)
-            return (yes[0] if yes else None) or (ok[0] if ok else None)
-
-        el = self.wait_until(either_confirm_or_success, timeout=15)
-
-        # если появился "Да" — подтверждаем
-        if getattr(el, "tag_name", "").lower() == "button" and el.text.strip() == "Да":
-            self.click_safe(RentPageLocators.YES_BUTTON_ANYWHERE)
+        # однозначно: ждём кнопку "Да" и нажимаем её
+        self.is_visible(RentPageLocators.YES_BUTTON_ANYWHERE)
+        self.click_safe(RentPageLocators.YES_BUTTON_ANYWHERE)
 
     @allure.step("Проверить, что заказ оформлен успешно")
     def assert_success(self):
